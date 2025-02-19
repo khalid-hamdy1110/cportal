@@ -1,0 +1,170 @@
+{% extends "layout.html" %}
+
+{% block title %}
+     Class Submissions
+{% endblock %}
+
+{% block main %}
+<div class="card card-lg text-center">
+  <div class="card-body">
+    <h1 class="card-title p-3"><strong>Submissions</strong></h1>
+    {% for classes in classes %}
+    <hr class="spacer">
+    <div class="accordion accordion-flush" id="accordionFlush{{ classes['name'] }}">
+      <div class="accordion-item">
+        <h2 class="accordion-header" id="flush-heading">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapse{{ classes['name'] }}" aria-expanded="false" aria-controls="flush-collapse{{ classes['name'] }}">
+            <h4 class="card-title"><strong>{{ classes['name'] }}</strong></h4>
+          </button>
+        </h2>
+        <div id="flush-collapse{{ classes['name'] }}" class="accordion-collapse collapse" aria-labelledby="flush-heading" data-bs-parent="#accordionFlush{{ classes['name'] }}">
+          <div class="accordion-body text-end">
+
+              {% set isAssignments = [] %}
+
+              {% for assignments in assignments %}
+              {% if assignments['className'] == classes['name'] %}
+              {% if isAssignments.append(True) %} {% endif %}
+              {% endif %}
+              {% endfor %}
+
+              {% if isAssignments %}
+              {% for assignments in assignments %}
+              {% if assignments['className'] == classes['name'] %}
+              <div class="accordion accordion-flush" id="accordionFlush{{ assignments['id'] }}">
+                <div class="accordion-item">
+                  <h2 class="accordion-header" id="flush-heading{{ assignments['id'] }}">
+                    <button class="accordion-button collapsed border border-1" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapse{{ assignments['id'] }}" aria-expanded="false" aria-controls="flush-collapse{{ assignments['id'] }}">
+                      <strong>{{ assignments['name'] }}</strong>
+                    </button>
+                  </h2>
+                  <div id="flush-collapse{{ assignments['id'] }}" class="accordion-collapse collapse" aria-labelledby="flush-heading{{ assignments['id'] }}" data-bs-parent="#accordionFlush{{ assignments['id'] }}">
+                    <div class="accordion-body border border-1 text-start">
+                      {% set isSubmissions = [] %}
+
+                      {% for submissions in submissions %}
+                      {% if submissions['assignmentid'] == assignments['id'] %}
+                      {% if isSubmissions.append(True) %} {% endif %}
+                      {% endif %}
+                      {% endfor %}
+
+                      {% if isSubmissions %}
+                      <div class="container-mx-0 overflow-auto">
+                      <table class="table text-nowrap">
+                        <thead>
+                            <tr class="border-0 fw-bold">
+                              <th class="text-start">Student Username</th>
+                              <th class="text-start">Submission</th>
+                              <th class="text-start">Submission Date</th>
+                              <th class="text-start">On Time</th>
+                              <th class="text-start">Mark</th>
+                              <th class="text-start">Comment</th>
+                              <th class="text-end">Return</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                          {% for submissions in submissions %}
+                          {% if submissions['assignmentid'] == assignments['id'] %}
+                            <tr>
+                              {% for students in students %}
+                              {% if submissions['stdid'] == students['id'] %}
+                              <td class="text-start align-middle">{{ students['username'] }}</td>
+                              {% endif %}
+                              {% endfor %}
+                              {% for attatchments in attatchments %}
+                              {% if submissions['id'] == attatchments['typeid'] %}
+                              <td class="text-start align-middle">
+                                <form method="post" action="/attatchment-downloader">
+                                  <button type="submit" name="fileinfo" value="{{ attatchments['filename'] }} {{ submissions['id'] }} submission" class="btn btn-light" id="material-buttons">
+                                    {{ attatchments['filename'] }}
+                                    <img src="/static/downloadimg.png" alt="downloadimg" width="18">
+                                  </button>
+                                </form>
+                              </td>
+                              {% endif %}
+                              {% endfor %}
+
+                              <td class="text-start align-middle">{{ submissions['submissionDate'] }}</td>
+                              <td class="text-start align-middle">{{ submissions['onTime'] }}</td>
+
+                              {% set inMarks = [] %}
+
+                              {% for marks in marks %}
+                              {% if marks['submissionid'] == submissions['id'] %}
+                              <td class="text-start align-middle">{{ marks['marks'] }}/{{ marks['totalmarks'] }}</td>
+                              <td class="text-start align-middle text-truncate" style="max-width: 150px">{{ marks['comment'] }}</td>
+                              <td class="text-end align-middle">
+                                <button type="button" class="btn btn-primary" disabled>
+                                  <img src="/static/return.png" alt="return" width="15">
+                                </button>
+                              </td>
+                              {% if inMarks.append(True) %} {% endif %}
+                              {% endif %}
+                              {% endfor %}
+
+                              {% if not inMarks %}
+                              <td class="text-start align-middle">None</td>
+                              <td class="text-start align-middle">None</td>
+                              <td class="text-end align-middle">
+                                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#Modal{{ submissions['id'] }}">
+                                  <img src="/static/return.png" alt="return" width="15">
+                                </button>
+                                <div class="modal fade" id="Modal{{ submissions['id'] }}" tabindex="-1" aria-labelledby="Modal{{ submissions['id'] }}Label" aria-hidden="true">
+                                  <div class="modal-dialog">
+                                    <div class="modal-content">
+                                      <div class="modal-header">
+                                        <h5 class="modal-title" id="Modal{{ submissions['id'] }}Label">Return Assignment</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                      </div>
+                                      <form action="/marker" method="post">
+                                      <div class="modal-body text-start text-wrap">
+                                        <label for="name" class="form-label">Mark</label>
+                                        <div class="input-group mb-3">
+                                          <input type="number" class="form-control" id="mark" placeholder="Mark" required name="mark" min="0" max="{{ assignments['totalMarks'] }}" aria-label="totalMark" aria-describedby="totalMark" autocomplete="off">
+                                          <span class="input-group-text" id="totalMark">/{{ assignments['totalMarks'] }}</span>
+                                        </div>
+                                        <div class="mb-3">
+                                          <label for="name" class="form-label">Comment</label>
+                                          <textarea class="form-control" id="comment" placeholder="Comment" name="comment"></textarea>
+                                        </div>
+                                      </div>
+                                      <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                        {% for students in students %}
+                                        {% if submissions['stdid'] == students['id'] %}
+                                        <button type="submit" class="btn btn-primary" name="marks" value="{{ assignments['id'] }} {{ students['id'] }} {{ assignments['totalMarks'] }} {{ submissions['id'] }}">Return</button>
+                                        {% endif %}
+                                        {% endfor %}
+                                      </form>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </td>
+                              {% endif %}
+                            </tr>
+                          {% endif %}
+                          {% endfor %}
+                        </tbody>
+                      </table>
+                      </div>
+                      {% else %}
+                      <h4 class="card-text text-center align-middle my-3">No Submissions!</h4>
+                      {% endif %}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              {% endif %}
+              {% endfor %}
+              {% else %}
+              <h4 class="card-text text-center align-middle mt-3">No Assignments!</h4>
+              {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,187 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Settings
+{% endblock %}
+
+{% block main %}
+<div class="row">
+  <div class="col-lg-3 mb-4">
+    <div class="card">
+      <div class="card-body">
+          <div class="row" id="profile">
+            <div class="col-10">
+              <h3 class="card-title"><strong>Your Profile</strong></h3>
+            </div>
+            <div class="col-1">
+              <img src="/static/profile.png" alt="Profile" width="30">
+            </div>
+          </div>
+        <hr class="spacer">
+        <p class="card-text text-center"><img src="/static/admin.png" alt="Profile Picture" width="120"></p>
+        <p class="card-text">
+          <div class="row">
+            <div class="col-1">
+              <img src="/static/id.png" alt="ID" width="25">
+            </div>
+            <div class="col text-center">
+              {{ info[0]["id"] }}
+            </div>
+          </div>
+        </p>
+        <p class="card-text">
+          <div class="row">
+            <div class="col-1">
+              <img src="/static/username.png" alt="Username" width="25">
+            </div>
+            <div class="col text-center">
+              {{ info[0]["username"] }}
+            </div>
+          </div>
+        </p>
+        <p class="card-text">
+          <div class="row">
+            <div class="col-1">
+              <img src="/static/name.png" alt="Name" width="25">
+            </div>
+            <div class="col text-center">
+              {{ info[0]["First_Name"] }} {{ info[0]["Last_Name"] }}
+            </div>
+          </div>
+        </p>
+        <p class="card-text">
+          <div class="row">
+            <div class="col-1">
+              <img src="/static/email.png" alt="Email" width="25">
+            </div>
+            <div class="col text-center">
+              {{ info[0]["email"] }}
+            </div>
+          </div>
+        </p>
+        <p class="card-text">
+          <div class="row">
+            <div class="col-1">
+              <img src="/static/phone.png" alt="Phone" width="25">
+            </div>
+            <div class="col text-center">
+              {{ info[0]["phone"] }}
+            </div>
+          </div>
+        </p>
+      </div>
+    </div>
+  </div>
+  <div class="col">
+    <div class="row row-cols-1 row-cols-md-2 g-4">
+      <div class="col">
+        <div class="card" id="category-cards">
+          <div class="card-body">
+            <h5 class="card-title">Change Password</h5>
+            <hr class="spacer">
+            <h6 class="card-text text-nowrap">
+              <form action="/change-pass" method="post">
+                <div class="mb-3 row">
+                  <label for="currentPass" class="col col-form-label">Current Password</label>
+                  <div class="col">
+                    <input type="password" class="form-control" id="currentPass" placeholder="Current Password" name="currentPass" required>
+                  </div>
+                </div>
+                <div class="mb-3 row">
+                  <label for="newPass" class="col col-form-label">New Password</label>
+                  <div class="col">
+                    <input type="password" class="form-control" id="newPass" placeholder="New Password" name="newPass" required>
+                  </div>
+                </div>
+                <div class="mb-2 row">
+                  <label for="confirmPass" class="col col-form-label">Retype Password</label>
+                  <div class="col">
+                    <input type="password" class="form-control" id="confirmPass" placeholder="Retype Password" name="confirmPass" required>
+                  </div>
+                </div>
+                <div class="text-end">
+                  <input type="submit" class="btn btn-primary" value="Change Password">
+                </div>
+              </form>
+            </h6>
+          </div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="card" id="category-cards">
+          <div class="card-body">
+            <h5 class="card-title">Login History</h5>
+            <hr class="spacer">
+            <h6 class="card-text">
+              <div class="container-mx-0 overflow-auto" style="height: 200px;">
+              <table class="table table-striped">
+                <thead>
+                  <tr class="border-0 fw-bold">
+                    <th class="text-center">IP Address</th>
+                    <th class="text-center">Login Date</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for loginHistory in loginHistory %}
+                  <tr>
+                    <td class="text-center">{{ loginHistory['IP'] }}</td>
+                    <td class="text-center">{{ loginHistory['login_date'] }}</td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+            </table>
+            </div>
+            </h6>
+          </div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="card" id="category-cards">
+          <div class="card-body">
+            <h5 class="card-title">Change Contact Info</h5>
+            <hr class="spacer">
+            <h6 class="card-text">
+              <form action="/change-contact" method="post">
+                <div class="mb-3 row">
+                  <label for="email" class="label mb-2">Email</label>
+                  <div class="col-8">
+                    <input type="email" class="form-control" id="email" placeholder="{{ info[0]['email'] }}" name="email" value="{{ info[0]['email'] }}" required>
+                  </div>
+                  <div class="col text-end">
+                    <button type="submit" class="btn btn-primary" value="{{ role }} email {{ info[0]['id'] }}" name="change">Change</button>
+                  </div>
+                </div>
+              </form>
+              <form action="/change-contact" method="post">
+                <div class="mb-3 row">
+                  <label for="phone" class="label mb-2">Phone</label>
+                    <div class="col-8">
+                      <input type="phone" class="form-control" id="phone" placeholder="{{ info[0]['phone'] }}" name="phone" value="{{ info[0]['phone'] }}" required>
+                    </div>
+                    <div class="col text-end">
+                      <button type="submit" class="btn btn-primary" value="{{ role }} phone {{ info[0]['id'] }}" name="change">Change</button>
+                    </div>
+                </div>
+              </form>
+            </h6>
+          </div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="card" id="category-cards">
+          <div class="card-body">
+            <h5 class="card-title">Preferences</h5>
+            <hr class="spacer">
+            <h6 class="card-text">
+              <div class="form-chech form-switch">
+                <input type="checkbox" class="form-check-input my-0" role="switch" id="darkSwitch">
+                <label class="form-check-label" id="darkSwitchLabel" for="darkSwitch">Dark Mode</label>
+              </div>
+            </h6>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
