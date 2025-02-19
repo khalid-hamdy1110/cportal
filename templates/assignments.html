@@ -1,0 +1,327 @@
+{% extends "layout.html" %}
+
+{% block title %}
+     Class Assignments
+{% endblock %}
+
+{% block main %}
+<div class="card card-lg text-center">
+  <div class="card-body">
+    <h1 class="card-title p-3"><strong>Assignments</strong></h1>
+    {% for classes in classes %}
+    <hr class="spacer">
+    <div class="accordion accordion-flush" id="accordionFlush{{ classes['name'] }}">
+      <div class="accordion-item">
+        <h2 class="accordion-header" id="flush-heading">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapse{{ classes['name'] }}" aria-expanded="false" aria-controls="flush-collapse{{ classes['name'] }}">
+            <h4 class="card-title"><strong>{{ classes['name'] }}</strong></h4>
+          </button>
+        </h2>
+        <div id="flush-collapse{{ classes['name'] }}" class="accordion-collapse collapse" aria-labelledby="flush-heading" data-bs-parent="#accordionFlush{{ classes['name'] }}">
+          <div class="accordion-body text-end">
+            {% if role == 'a' or role == 't' %}
+              <button type="button" class="btn btn-link" data-bs-toggle="modal" data-bs-target="#Modal{{ classes['name'] }}">
+                <img src="/static/addassignment.png" alt="addassignmentimg" width="18">
+              </button>
+              <div class="modal fade" id="Modal{{ classes['name'] }}" tabindex="-1" aria-labelledby="Modal{{ classes['name'] }}Label" aria-hidden="true">
+                <div class="modal-dialog">
+                  <div class="modal-content text-start">
+                    <div class="modal-header">
+                      <h5 class="modal-title" id="Modal{{ classes['name'] }}Label">Add an assignment to {{ classes['name'] }} class.</h5>
+                    </div>
+                    <form action= "/assignment-maker" method="POST" enctype="multipart/form-data">
+                    <div class="modal-body">
+                      <div class="mb-3">
+                        <label for="name" class="form-label">Name</label>
+                        <input type="text" class="form-control" id="name" placeholder="Name" required name="name" autocomplete="off">
+                      </div>
+                      <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea class="form-control" id="description" placeholder="Description" required name="description"></textarea>
+                      </div>
+                      <div class="mb-3">
+                        <label for="totalmarks" class="form-label">Total Marks</label>
+                        <input type="number" class="form-control" id="totalmarks" placeholder="Total Marks" required name="totalmarks" min="1" autocomplete="off">
+                      </div>
+                      <div class="mb-3">
+                        <label for="duedate" class="form-label">Due Date</label>
+                        <input type="date" class="form-control" id="duedate" min='{{ today }}' required name="duedate" autocomplete="off">
+                      </div>
+                      <input type="file" class="form-control" name="file"/>
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                      <button type="submit" class="btn btn-primary" name="info" value="{{ classes['name'] }} assignment {{ assignments['id'] }}">Add</button>
+                    </div>
+                    </form>
+                  </div>
+                </div>
+              </div>
+              <button type="button" class="btn btn-link" data-bs-toggle="modal" data-bs-target="#Modal{{ classes['name'] }}delete">
+                <img src="/static/trash-icon.png" alt="Delete Assignment" width="18">
+              </button>
+              <div class="modal fade" id="Modal{{ classes['name'] }}delete" tabindex="-1" aria-labelledby="Modal{{ classes['name'] }}deleteLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                  <div class="modal-content text-start">
+                    <div class="modal-header">
+                      <h5 class="modal-title" id="Modal{{ classes['name'] }}deleteLabel">Delete an assignment from {{ classes['name'] }} class.</h5>
+                    </div>
+                    <form action= "/assignment-remover" method="POST" enctype="multipart/form-data">
+                    <div class="modal-body">
+                      {% for assignments in assignments %}
+                      {% if assignments['className'] == classes['name'] %}
+                      <div class="form-check">
+                        <input class="form-check-input" type="radio" name="assignmentDelete" id="{{ assignments['name'] }}" required value="{{ assignments['id'] }}">
+                        <label class="form-check-label" for="{{ assignments['name'] }}">
+                          {{ assignments['name'] }}
+                        </label>
+                      </div>
+                      {% endif %}
+                      {% endfor %}
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                      <button type="submit" class="btn btn-danger" name="info">Delete</button>
+                    </div>
+                    </form>
+                  </div>
+                </div>
+              </div>
+              {% endif %}
+
+              {% set isAssignments = [] %}
+
+              {% for assignments in assignments %}
+              {% if assignments['className'] == classes['name'] %}
+              {% if isAssignments.append(True) %} {% endif %}
+              {% endif %}
+              {% endfor %}
+
+              {% if isAssignments %}
+              {% for assignments in assignments %}
+
+              {% set inSubmissions = [] %}
+
+              {% for submissions in submissions %}
+              {% if assignments['id'] == submissions['assignmentid'] %}
+                {% if inSubmissions.append(True) %} {% endif %}
+              {% endif %}
+              {% endfor %}
+
+              {% if assignments['className'] == classes['name'] %}
+              {% if inSubmissions %}
+              <div class="accordion accordion-flush" id="accordionFlush{{ assignments['id'] }}">
+                <div class="accordion-item">
+                  <h2 class="accordion-header" id="flush-heading{{ assignments['id'] }}">
+                    <button class="accordion-button collapsed border border-1 text-success" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapse{{ assignments['id'] }}" aria-expanded="false" aria-controls="flush-collapse{{ assignments['id'] }}">
+                      <strong>{{ assignments['name'] }}</strong>
+                    </button>
+                  </h2>
+                  <div id="flush-collapse{{ assignments['id'] }}" class="accordion-collapse collapse" aria-labelledby="flush-heading{{ assignments['id'] }}" data-bs-parent="#accordionFlush{{ assignments['id'] }}">
+                    <div class="accordion-body border border-1 text-start">
+                      <div class="row">
+                        <div class="col"><p class="text-start text-muted text-nowrap" style="font-size: 13px; margin-top: 0;">Due: {{ assignments["dueDate"] }}</p></div>
+                        <div class="col"><p class="text-end" style="font-size: 13px; margin-top: 0; color: green;">Done</p></div>
+                      </div>
+                      <label for="#description" class="text-muted" style="font-size: 13px; margin-top: 0">Description</label>
+                      <h6 id="description">{{ assignments['description'] }}</h6>
+                      <div class="container-mx-0 overflow-auto">
+                      <label for="#attatchments" class="text-muted" style="font-size: 13px; margin-top: 0">Attatchments</label>
+                      <h6 id="attatchments">
+                        {% set noFiles = [] %}
+                        {% for attatchments in attatchments %}
+                        {% if attatchments['typeid'] == assignments['id'] and attatchments['type'] == 'assignment' %}
+                        <form action="/attatchment-downloader" method="post">
+                        <button class="rounded-pill border border-dark border-2 text-nowrap" type="submit" name="fileinfo" value="{{ attatchments['filename'] }} {{ assignments['id'] }} assignment" style="background-color: white; color: black; margin-top: 5px;">
+                          {{ attatchments['filename'] }}
+                          <img src="/static/downloadimg.png" alt="downloadimg" width="18">
+                        </button>
+                        </form>
+                        {% if noFiles.append(False) %} {% endif %}
+                        {% endif %}
+                        {% endfor %}
+
+                        {% if not noFiles %}
+                        No files attatched.
+                        {% endif %}
+
+                        {% if role == 'a' or role == 't' %}
+                        <button type="button" class="rounded border border-dark border-2" data-bs-toggle="modal" data-bs-target="#Modal{{ assignments['id'] }}" style="background-color: white; color: black; margin-top: 5px;">
+                          <img src="/static/addfile.png" alt="addfile" width="18">
+                        </button>
+                        <div class="modal fade" id="Modal{{ assignments['id'] }}" tabindex="-1" aria-labelledby="ModalLabel{{ assignments['id'] }}" aria-hidden="true">
+                          <div class="modal-dialog">
+                            <div class="modal-content text-start">
+                              <div class="modal-header">
+                                <h5 class="modal-title" id="ModalLabel{{ assignments['id'] }}">Add material to {{ assignments['name'] }}.</h5>
+                              </div>
+                              <form action= "/attatchment-uploader" method="POST" enctype="multipart/form-data">
+                              <div class="modal-body">
+                                  <input type="file" class="form-control" name="file" required/>
+                              </div>
+                              <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                <button type="submit" class="btn btn-primary" name="type" value="assignment {{ assignments['id'] }}">Submit</button>
+                              </div>
+                              </form>
+                            </div>
+                          </div>
+                        </div>
+                        {% endif %}
+                    </h6>
+                    </div>
+                    <hr class="spacer">
+                    <div class="container-mx-0 overflow-auto">
+                    {% for submissions in submissions %}
+                    {% if submissions['assignmentid'] == assignments['id'] %}
+                    <h6 id="submission">
+                      <label for="#submission" class="text-muted" style="font-size: 13px; margin-top: 0">Submission {{ submissions['submissionDate'] }}</label>
+                      {% for attatchments in attatchments %}
+                      {% if attatchments['typeid'] == submissions['id'] and attatchments['type'] == 'submission' %}
+                      <form action="/attatchment-downloader" method="post">
+                      <button class="rounded-pill border border-dark border-2 text-nowrap" type="submit" name="fileinfo" value="{{ attatchments['filename'] }} {{ submissions['id'] }} submission" style="background-color: white; color: black; margin-top: 5px;">
+                        {{ attatchments['filename'] }}
+                        <img src="/static/downloadimg.png" alt="downloadimg" width="18">
+                      </button>
+                      </form>
+                      {% endif %}
+                      {% endfor %}
+                    </h6>
+                    {% endif %}
+                    {% endfor %}
+                    </div>
+                    {% set isComment = [] %}
+                    <label for="#marks" class="text-muted" style="font-size: 13px; margin-top: 0">Marks</label>
+                    <h6 id="marks"><u>{% for marks in marks %}{% if marks['assignmentid'] == assignments['id'] %}{{ marks['marks'] }}{% endif %}{% endfor %}/{{ assignments['totalMarks'] }}</u></h6>
+                    <label for="#comment" class="text-muted" style="font-size: 13px; margin-top: 0">Teacher Comments</label>
+                    <h6 id="comment">{% for marks in marks %}{% if marks['assignmentid'] == assignments['id'] %}{{ marks['comment'] }}{% if isComment.append(True) %} {% endif %}{% endif %}{% endfor %}{% if not isComment %} No teacher comment. {% endif %}</h6>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              {% else %}
+              <div class="accordion accordion-flush" id="accordionFlush{{ assignments['id'] }}">
+                <div class="accordion-item">
+                  <h2 class="accordion-header" id="flush-heading{{ assignments['id'] }}">
+                    <button class="accordion-button collapsed border border-1 text-danger" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapse{{ assignments['id'] }}" aria-expanded="false" aria-controls="flush-collapse{{ assignments['id'] }}">
+                      <strong>{{ assignments['name'] }}</strong>
+                    </button>
+                  </h2>
+                  <div id="flush-collapse{{ assignments['id'] }}" class="accordion-collapse collapse" aria-labelledby="flush-heading{{ assignments['id'] }}" data-bs-parent="#accordionFlush{{ assignments['id'] }}">
+                    <div class="accordion-body border border-1 text-start">
+                      <div class="row">
+                        <div class="col"><p class="text-start text-muted text-nowrap" style="font-size: 13px; margin-top: 0;">Due: {{ assignments["dueDate"] }}</p></div>
+                        <div class="col"><p class="text-end" style="font-size: 13px; margin-top: 0; color: red;">Not Done</p></div>
+                      </div>
+                      <label for="#description" class="text-muted" style="font-size: 13px; margin-top: 0">Description</label>
+                      <h6 id="description">{{ assignments['description'] }}</h6>
+                      <div class="container-mx-0 overflow-auto">
+                      <label for="#attatchments" class="text-muted" style="font-size: 13px; margin-top: 0">Attatchments</label>
+                      <h6 id="attatchments">
+                        {% set noFiles = [] %}
+                        {% for attatchments in attatchments %}
+                        {% if attatchments['typeid'] == assignments['id'] and attatchments['type'] == 'assignment' %}
+                        <form action="/attatchment-downloader" method="post">
+                        <button class="rounded-pill border border-dark border-2 text-nowrap" type="submit" name="fileinfo" value="{{ attatchments['filename'] }} {{ assignments['id'] }} assignment" style="background-color: white; color: black; margin-top: 5px;">
+                          {{ attatchments['filename'] }}
+                          <img src="/static/downloadimg.png" alt="downloadimg" width="18">
+                        </button>
+                        </form>
+                        {% if noFiles.append(False) %} {% endif %}
+                        {% endif %}
+                        {% endfor %}
+
+                        {% if not noFiles %}
+                        No files attatched.
+                        {% endif %}
+
+                        {% if role == 'a' or role == 't' %}
+                        <button type="button" class="rounded border border-dark border-2" data-bs-toggle="modal" data-bs-target="#Modal{{ assignments['id'] }}" style="background-color: white; color: black; margin-top: 5px;">
+                          <img src="/static/addfile.png" alt="addfile" width="18">
+                        </button>
+                        <div class="modal fade" id="Modal{{ assignments['id'] }}" tabindex="-1" aria-labelledby="ModalLabel{{ assignments['id'] }}" aria-hidden="true">
+                          <div class="modal-dialog">
+                            <div class="modal-content text-start">
+                              <div class="modal-header">
+                                <h5 class="modal-title" id="ModalLabel{{ assignments['id'] }}">Add material to {{ assignments['name'] }}.</h5>
+                              </div>
+                              <form action= "/attatchment-uploader" method="POST" enctype="multipart/form-data">
+                              <div class="modal-body">
+                                  <input type="file" class="form-control" name="file" required/>
+                              </div>
+                              <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                <button type="submit" class="btn btn-primary" name="type" value="assignment {{ assignments['id'] }}">Submit</button>
+                              </div>
+                              </form>
+                            </div>
+                          </div>
+                        </div>
+                        {% endif %}
+                    </h6>
+                    </div>
+                    <hr class="spacer">
+                    <div class="container-mx-0 overflow-auto">
+                    {% for submissions in submissions %}
+                    {% if submissions['assignmentid'] == assignments['id'] %}
+                    <h6 id="submission">
+                      <label for="#submission" class="text-muted" style="font-size: 13px; margin-top: 0">Submission</label>
+                      {% for attatchments in attatchments %}
+                      {% if attatchments['typeid'] == submissions['id'] and attatchments['type'] == 'submission' %}
+                      <form action="/attatchment-downloader" method="post">
+                      <button class="rounded-pill border border-dark border-2 text-nowrap" type="submit" name="fileinfo" value="{{ attatchments['filename'] }} {{ assignments['id'] }} submission" style="background-color: white; color: black; margin-top: 5px;">
+                        {{ attatchments['filename'] }}
+                        <img src="/static/downloadimg.png" alt="downloadimg" width="18">
+                      </button>
+                      </form>
+                      {% endif %}
+                      {% endfor %}
+                    </h6>
+                    {% endif %}
+                    {% endfor %}
+                    </div>
+                    <label for="#marks" class="text-muted" style="font-size: 13px; margin-top: 0">Marks</label>
+                    <h6 id="marks"><u>/{{ assignments['totalMarks'] }}</u></h6>
+                    <label for="#comments" class="text-muted" style="font-size: 13px; margin-top: 0">Teacher Comments</label>
+                    <h6 id="comments">No teacher comment.</h6>
+                    <div class="container-mx-0 text-end">
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#Modal{{ assignments['id'] }}submission" {% if role == 'a' or role == 't' %} disabled {% endif %}>
+                      Submit
+                    </button>
+                    <div class="modal fade" id="Modal{{ assignments['id'] }}submission" tabindex="-1" aria-labelledby="ModalLabel{{ assignments['id'] }}submission" aria-hidden="true">
+                      <div class="modal-dialog">
+                        <div class="modal-content text-start">
+                          <div class="modal-header">
+                            <h5 class="modal-title" id="ModalLabel{{ assignments['id'] }}submission">Add submission to {{ assignments['name'] }}.</h5>
+                          </div>
+                          <form action= "/attatchment-uploader" method="POST" enctype="multipart/form-data">
+                          <div class="modal-body">
+                              <input type="file" class="form-control" name="file" required/>
+                          </div>
+                          <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-primary" name="type" value="submission {{ assignments['id'] }} {{ assignments['dueDate'] }}">Submit</button>
+                          </div>
+                          </form>
+                        </div>
+                      </div>
+                    </div>
+                    </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              {% endif %}
+              {% endif %}
+              {% endfor %}
+              {% else %}
+              <h4 class="card-text text-center align-middle">No Assignments!</h4>
+              {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

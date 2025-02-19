@@ -1,0 +1,227 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Messages
+{% endblock %}
+
+{% block main %}
+<h1 class="text-center p-3"><strong>Messages</strong></h1>
+<hr class="spacer">
+<div class="row">
+    <div class="col text-start">
+        <form action="/messages" method="get" class="d-flex">
+        <select class="form-select" style="width: 130px;" name="filter">
+            {% if message == "sent" %}
+            <option value="recieved">Recieved</option>
+            <option value="sent" selected>Sent</option>
+            {% else %}
+            <option value="recieved" selected>Recieved</option>
+            <option value="sent">Sent</option>
+            {% endif %}
+        </select>
+        <button class="btn btn-primary ms-1" type="submit">
+            <img src="/static/filter-line-icon.png" alt="Filter" width="20">
+        </button>
+        </form>
+    </div>
+    <div class="col text-end">
+        <button type="button" class="btn" onClick="window.location.reload();">
+            <img src="/static/refresh-icon.png" alt="Refresh" width="20">
+        </button>
+        <button type="button" class="btn" data-bs-toggle="modal" data-bs-target="#sendMessage">
+            <img src="/static/sent-icon.png" alt="Send a message" width="20">
+        </button>
+        <div class="modal fade text-start" id="sendMessage" tabindex="-1" aria-labelledby="sendMessageLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-scrollable" style="max-height: 80%;">
+              <div class="modal-content">
+                  <div class="modal-header">
+                      <h5 class="modal-title" id="ModalLabel">Send a message</h5>
+                  </div>
+                <div class="modal-body">
+                    <form action="/send" method="post">
+                    <div class="row">
+                        <div class="col">
+                            <div class="mb-3">
+                            <label for="to" class="form-label">To</label>
+                            <input type="text" class="form-control" id="to" placeholder="To" required name="to" autocomplete="off">
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="mb-3">
+                            <label for="from" class="form-label">From</label>
+                            <input type="text" class="form-control" id="from" name="from" disabled value="{{ info[0]['username'] }}" autocomplete="off">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="subject" class="form-label">Subject</label>
+                        <input type="text" class="form-control" id="subject" name="subject" required placeholder="Subject" autocomplete="off">
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea class="form-control" id="description" placeholder="Description" required name="description"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                  <button type="submit" class="btn btn-primary">Send <img src="/static/sent-icon.png" alt="Send a message" width="20"></button>
+                </div>
+                </form>
+              </div>
+            </div>
+        </div>
+        {% if role == 'a' %}
+        <button type="button" class="btn" data-bs-toggle="modal" data-bs-target="#sendGroupMessage">
+            <img src="/static/share-group-icon.png" alt="Send to a group" width="30">
+        </button>
+        <div class="modal fade text-start" id="sendGroupMessage" tabindex="-1" aria-labelledby="sendGroupMessageLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-scrollable" style="max-height: 80%;">
+              <div class="modal-content">
+                  <div class="modal-header">
+                      <h5 class="modal-title" id="ModalLabel">Send message to group</h5>
+                  </div>
+                <div class="modal-body">
+                    <form action="/sendGroupMessage" method="post">
+                    <div class="row">
+                        <div class="col">
+                            <div class="mb-3">
+                            <label for="to" class="form-label">To</label>
+                            <select class="form-select" name="to" id="to">
+                                <option disabled>Select Group</option>
+                                <option value="admins">Admins</option>
+                                <option value="teachers">Teachers</option>
+                                <option value="students">Students</option>
+                              </select>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="mb-3">
+                            <label for="from" class="form-label">From</label>
+                            <input type="text" class="form-control" id="from" name="from" disabled value="{{ info[0]['username'] }}" autocomplete="off">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="subject" class="form-label">Subject</label>
+                        <input type="text" class="form-control" id="subject" name="subject" required placeholder="Subject" autocomplete="off">
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea class="form-control" id="description" placeholder="Description" required name="description"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                  <button type="submit" class="btn btn-primary">Send <img src="/static/sent-icon.png" alt="Send a message" width="20"></button>
+                </div>
+                </form>
+              </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+<hr class="spacer">
+{% if messages %}
+<div class="container-mx-0 overflow-auto text-nowrap" style="max-height: 375px;">
+    <table class="table table-striped">
+        <thead> 
+            <tr class="fw-bold">
+                {% if message == "sent" %}
+                <th class="text-start">To</th>
+                {% else %}
+                <th class="text-start">From</th>
+                {% endif %}
+                <th class="text-start">Subject</th>
+                <th class="text-start">Description</th>
+                <th class="text-center">Date</th>
+                <th class="text-center">View</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for messages in messages %}
+            <tr>
+                {% if message == "sent" %}
+                    <td class="text-start align-middle">{{ messages["reciever"] }}</td>
+                {% else %}
+                    <td class="text-start align-middle">{{ messages["sender"] }}</td>
+                {% endif %}
+                <td class="text-start text-truncate align-middle" style="max-width: 10vw;">{{ messages["subject"] }}</td>
+                <td class="text-start text-truncate align-middle" style="max-width: 20vw;">{{ messages["description"] }}</td>
+                <td class="text-center align-middle">{{ messages["creationDate"] }}</td>
+                <td class="text-center">
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#viewMessage{{ messages['id'] }}">
+                        View
+                    </button>
+                    <div class="modal fade text-start" id="viewMessage{{ messages['id'] }}" tabindex="-1" aria-labelledby="viewMessage{{ messages['id'] }}Label" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-scrollable" style="max-height: 80%;">
+                          <div class="modal-content">
+                              <div class="modal-header">
+                                  <h5 class="modal-title" id="ModalLabel">Message from {{ messages['sender'] }}</h5>
+                              </div>
+                            <div class="modal-body">
+                                <label for="subject" class="form-label">Subject</label>
+                                <div class="form-control mb-3" style="white-space: pre-wrap;" readonly id="subject">{{ messages['subject'] }}</div>
+                                <label for="description" class="form-label">Description</label>
+                                <div class="form-control overflow-auto" style="white-space: pre-wrap;" readonly id="description">{{ messages['description'] }}</div>
+                            </div>
+                            <div class="modal-footer">
+                              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                              {% if message == "sent" %}
+                              <button class="btn btn-primary" disabled>Reply</button>
+                              {% else %}
+                              <button type="submit" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#replyMessage{{ messages['id'] }}">Reply</button>
+                              {% endif %}
+                            </div>
+                          </div>
+                        </div>
+                    </div>
+                    <div class="modal fade text-start" id="replyMessage{{ messages['id'] }}" tabindex="-1" aria-labelledby="replyMessage{{ messages['id'] }}Label" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-scrollable" style="max-height: 80%;">
+                          <div class="modal-content">
+                              <div class="modal-header">
+                                  <h5 class="modal-title" id="ModalLabel">Send a message</h5>
+                              </div>
+                            <div class="modal-body">
+                                <form action="/send" method="post">
+                                <div class="row">
+                                    <div class="col">
+                                        <div class="mb-3">
+                                        <label for="to" class="form-label">To</label>
+                                        <input type="text" class="form-control" id="to" placeholder="To" required name="to" value="{{ messages['sender'] }}" readonly>
+                                        </div>
+                                    </div>
+                                    <div class="col">
+                                        <div class="mb-3">
+                                        <label for="from" class="form-label">From</label>
+                                        <input type="text" class="form-control" id="from" name="from" disabled value="{{ info[0]['username'] }}">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="subject" class="form-label">Subject</label>
+                                    <input type="text" class="form-control" id="subject" name="subject" required placeholder="Subject" value="{{ messages['subject'] }}" readonly>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="description" class="form-label">Description</label>
+                                    <textarea class="form-control" id="description" placeholder="Description" required name="description"></textarea>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                              <button type="submit" class="btn btn-primary">Send <img src="/static/sent-icon.png" alt="Send a message" width="20"></button>
+                            </div>
+                            </form>
+                          </div>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<h4 class="card-text text-center align-middle my-5">No Messages!</h4>
+{% endif %}
+{% endblock %}

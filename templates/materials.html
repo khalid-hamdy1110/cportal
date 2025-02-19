@@ -1,0 +1,120 @@
+{% extends "layout.html" %}
+
+{% block title %}
+     Class Materials
+{% endblock %}
+
+{% block main %}
+<div class="card card-lg text-center">
+  <div class="card-body">
+    <h1 class="card-title p-3"><strong>Materials</strong></h1>
+    {% for classes in classes %}
+    <hr class="spacer">
+    <div class="accordion accordion-flush" id="accordionFlush{{ classes['name'] }}">
+      <div class="accordion-item">
+        <h2 class="accordion-header" id="flush-heading">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapse{{ classes['name'] }}" aria-expanded="false" aria-controls="flush-collapse{{ classes['name'] }}">
+            <h4 class="card-title"><strong>{{ classes['name'] }}</strong></h4>
+          </button>
+        </h2>
+        <div id="flush-collapse{{ classes['name'] }}" class="accordion-collapse collapse" aria-labelledby="flush-heading" data-bs-parent="#accordionFlush{{ classes['name'] }}">
+          <div class="accordion-body text-end">
+            {% if role == 'a' or role == 't' %}
+              <button type="button" class="btn btn-link" data-bs-toggle="modal" data-bs-target="#Modal{{ classes['name'] }}">
+                <img src="/static/uploadimg.png" alt="uploadimg" width="18">
+              </button>
+              <div class="modal fade" id="Modal{{ classes['name'] }}" tabindex="-1" aria-labelledby="Modal{{ classes['name'] }}Label" aria-hidden="true">
+                <div class="modal-dialog">
+                  <div class="modal-content text-start">
+                    <div class="modal-header">
+                      <h5 class="modal-title" id="Modal{{ classes['name'] }}Label">Add material to {{ classes['name'] }} class.</h5>
+                    </div>
+                    <form action= "/uploader" method="POST" enctype="multipart/form-data">
+                    <div class="modal-body">
+                        <input type="file" class="form-control" name="file" required/>
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                      <button type="submit" class="btn btn-primary" name="classname" value="{{ classes['name'] }}">Submit</button>
+                    </div>
+                    </form>
+                  </div>
+                </div>
+              </div>
+              {% endif %}
+
+              {% set isMaterials = [] %}
+
+              {% for materials in materials %}
+              {% if materials['classname'] == classes['name'] %}
+              {% if isMaterials.append(True) %} {% endif %}
+              {% endif %}
+              {% endfor %}
+
+              {% if isMaterials %}
+              <div class="container-mx-0 overflow-auto">
+              <table class="table text-nowrap">
+                <thead>
+                    <tr class="border-0 fw-bold">
+                        <th class="text-start">Filename</th>
+                        {% if role == 'a' or role == 't' %}
+                        <th class="text-end">Delete</th>
+                        {% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for materials in materials %}
+                    {% if materials['classname'] == classes['name'] %}
+                        <tr>
+                            <td class="text-start">
+                              <form method="post" action="/downloader">
+                                <button type="submit" name="filename" value="{{ materials['filename'] }}" class="btn btn-light" id="material-buttons">
+                                  <img src="/static/fileimage.png" alt="fileimg" width="18">
+                                  {{ materials['filename'] }}
+                                  <img src="/static/downloadimg.png" alt="downloadimg" width="18">
+                                </button>
+                              </form>
+                            </td>
+                            {% if role == 'a' or role == 't' %}
+                            <td class="text-end">
+                              <button type="button justify-content-end" data-bs-toggle="modal" data-bs-target="#Modal{{ materials['id'] }}" class="btn btn-danger">
+                                <img src="/static/deleteimage.png" alt="deleteimg" width="18">
+                              </button>
+                              <div class="modal fade" id="Modal{{ materials['id'] }}" tabindex="-1" aria-labelledby="Modal{{ materials['id'] }}Label" aria-hidden="true">
+                                <div class="modal-dialog">
+                                  <div class="modal-content">
+                                    <div class="modal-header">
+                                      <h5 class="modal-title" id="Modal{{ materials['id'] }}Label">DELETE WARNING ⚠️</h5>
+                                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body text-start text-wrap">
+                                      Are you sure you want to remove this file from materials?
+                                    </div>
+                                    <div class="modal-footer">
+                                      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                      <form action="/deleter" method="post">
+                                        <button type="submit" class="btn btn-danger" name="filename" value="{{ materials['filename'] }}">Delete</button>
+                                      </form>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </td>
+                            {% endif %}
+                        </tr>
+                        {% endif %}
+                    {% endfor %}
+                </tbody>
+              </table>
+            </div>
+            {% else %}
+            <h4 class="card-text text-center align-middle my-3">No Materials!</h4>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
